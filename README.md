@@ -1,0 +1,1 @@
+# mindcheck-stress-analyzer
