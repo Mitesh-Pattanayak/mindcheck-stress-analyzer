@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindCheck | Emotional Stress Analyzer</title>
+    <title>MindCheck Pro | Dynamic Stress Analyzer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -21,8 +21,7 @@
             <h2 class="text-xl font-bold text-red-600 mb-4">Medical Disclaimer</h2>
             <p class="text-gray-600 mb-6 text-sm">
                 This application is a <strong>wellness screening tool</strong> and NOT a clinical diagnostic tool. 
-                The results are based on self-reported data and should not replace professional medical advice, 
-                diagnosis, or treatment by a licensed mental health professional.
+                The results are based on self-reported data and should not replace professional medical advice.
             </p>
             <button onclick="closeDisclaimer()" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">I Understand</button>
         </div>
@@ -31,22 +30,19 @@
     <!-- Main App Container -->
     <div class="bg-white w-full max-w-2xl rounded-3xl shadow-xl overflow-hidden transition-all duration-500">
         
-        <!-- Header -->
         <div class="bg-indigo-600 p-6 text-white text-center">
-            <h1 class="text-2xl font-bold">MindCheck</h1>
-            <p class="text-indigo-100 text-sm">Analyze your current emotional state</p>
+            <h1 class="text-2xl font-bold">MindCheck Pro</h1>
+            <p class="text-indigo-100 text-sm">Dynamic Emotional State Analysis</p>
         </div>
 
-        <!-- Progress Bar -->
         <div id="progress-container" class="w-full bg-gray-200 h-2">
             <div id="progress-bar" class="bg-indigo-400 h-2 transition-all duration-300" style="width: 0%"></div>
         </div>
 
-        <!-- Questionnaire Section -->
         <div id="quiz-section" class="p-8">
             <div id="question-container" class="fade-in">
-                <span id="q-number" class="text-indigo-500 font-semibold text-sm uppercase tracking-wider">Question 1 of 10</span>
-                <h2 id="q-text" class="text-xl text-gray-800 font-medium mt-2 mb-8">Loading question...</h2>
+                <span id="q-number" class="text-indigo-500 font-semibold text-sm uppercase tracking-wider">Loading...</span>
+                <h2 id="q-text" class="text-xl text-gray-800 font-medium mt-2 mb-8">Preparing your session...</h2>
                 
                 <div class="grid gap-3">
                     <button onclick="handleAnswer(0)" class="w-full text-left p-4 rounded-xl border-2 border-gray-100 hover:border-indigo-500 hover:bg-indigo-50 transition-all">Never</button>
@@ -58,10 +54,9 @@
             </div>
         </div>
 
-        <!-- Result Section (Hidden by default) -->
         <div id="result-section" class="hidden p-8 fade-in text-center">
             <h2 class="text-2xl font-bold text-gray-800 mb-2">Your Analysis</h2>
-            <p class="text-gray-500 mb-8">Based on your responses, here is your current stress profile.</p>
+            <p class="text-gray-500 mb-8">Analysis based on a randomized set of indicators.</p>
             
             <div class="flex justify-center mb-8">
                 <div class="relative w-48 h-48">
@@ -79,54 +74,81 @@
                 <p id="stress-desc" class="text-indigo-700 text-sm leading-relaxed"></p>
             </div>
 
-            <button onclick="location.reload()" class="text-indigo-600 font-medium hover:underline">Retake Assessment</button>
+            <button onclick="location.reload()" class="text-indigo-600 font-medium hover:underline">Start New Randomized Session</button>
         </div>
     </div>
 
     <script>
-        // 1. Question Dataset
-        // Types: E = Emotional, P = Physical, M = Mental/Cognitive
-        const questions = [
-            { text: "How often have you felt that you were unable to control the important things in your life?", type: "M" },
-            { text: "How often have you felt confident about your ability to handle your personal problems?", type: "M", reverse: true },
-            { text: "How often have you felt nervous or 'stressed'?", type: "E" },
-            { text: "How often have you felt that things were going your way?", type: "E", reverse: true },
-            { text: "How often have you found that you could not cope with all the things you had to do?", type: "M" },
-            { text: "How often have you felt that you were unable to control the irritating annoyances of your life?", type: "E" },
-            { text: "How often have you felt that you were unable to deal with the stress of your day-to-day life?", type: "M" },
-            { text: "How often have you felt that you were unable to relax your muscles or feel physical tension?", type: "P" },
-            { text: "How often have you experienced disrupted sleep or fatigue due to worry?", type: "P" },
-            { text: "How often have you felt sudden irritability or anger over small things?", type: "E" },
-        ];
+        // 1. EXTENDED QUESTION BANK
+        const questionBank = {
+            E: [ // Emotional
+                { text: "How often have you felt nervous or 'stressed'?", reverse: false },
+                { text: "How often have you felt sudden irritability or anger over small things?", reverse: false },
+                { text: "How often have you felt that things were going your way?", reverse: true },
+                { text: "How often have you felt an overwhelming sense of sadness or loneliness?", reverse: false },
+                { text: "How often have you felt that you were unable to control the irritating annoyances of your life?", reverse: false },
+                { text: "How often have you felt emotionally drained at the end of the day?", reverse: false },
+            ],
+            P: [ // Physical
+                { text: "How often have you felt that you were unable to relax your muscles or feel physical tension?", reverse: false },
+                { text: "How often have you experienced disrupted sleep or fatigue due to worry?", reverse: false },
+                { text: "How often have you experienced tension headaches or muscle pain?", reverse: false },
+                { text: "How often have you felt a 'tightness' in your chest when thinking about your tasks?", reverse: false },
+                { text: "How often have you experienced changes in appetite due to stress?", reverse: false },
+                { text: "How often have you felt physically exhausted even after resting?", reverse: false },
+            ],
+            M: [ // Mental/Cognitive
+                { text: "How often have you felt that you were unable to control the important things in your life?", reverse: false },
+                { text: "How often have you felt confident about your ability to handle your personal problems?", reverse: true },
+                { text: "How often have you found that you could not cope with all the things you had to do?", reverse: false },
+                { text: "How often have you felt that you were unable to deal with the stress of your day-to-day life?", reverse: false },
+                { text: "How often have you struggled to concentrate or focus on a single task?", reverse: false },
+                { text: "How often have you felt that your mind is racing and won't stop?", reverse: false },
+            ]
+        };
 
+        let sessionQuestions = [];
         let currentQuestionIndex = 0;
         let scores = { E: 0, P: 0, M: 0 };
-        let totalPossibleScore = questions.length * 4;
+
+        // 2. RANDOMIZATION LOGIC
+        function initSession() {
+            const selected = [];
+            
+            // Pick 3 random questions from each category to keep it balanced
+            ['E', 'P', 'M'].forEach(cat => {
+                const pool = [...questionBank[cat]];
+                for (let i = 0; i < 3; i++) {
+                    const randomIndex = Math.floor(Math.random() * pool.length);
+                    const q = pool.splice(randomIndex, 1)[0];
+                    selected.push({ ...q, type: cat });
+                }
+            });
+
+            // Shuffle the final list so categories are mixed
+            sessionQuestions = selected.sort(() => Math.random() - 0.5);
+            loadQuestion();
+        }
 
         function closeDisclaimer() {
             document.getElementById('disclaimer-modal').classList.add('hidden');
         }
 
         function loadQuestion() {
-            const q = questions[currentQuestionIndex];
-            document.getElementById('q-number').innerText = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+            const q = sessionQuestions[currentQuestionIndex];
+            document.getElementById('q-number').innerText = `Question ${currentQuestionIndex + 1} of ${sessionQuestions.length}`;
             document.getElementById('q-text').innerText = q.text;
-            document.getElementById('progress-bar').style.width = `${(currentQuestionIndex / questions.length) * 100}%`;
+            document.getElementById('progress-bar').style.width = `${(currentQuestionIndex / sessionQuestions.length) * 100}%`;
         }
 
         function handleAnswer(value) {
-            const q = questions[currentQuestionIndex];
-            let finalValue = value;
-            
-            // Handle reverse scored questions (where 4 = low stress, 0 = high stress)
-            if (q.reverse) {
-                finalValue = 4 - value;
-            }
+            const q = sessionQuestions[currentQuestionIndex];
+            let finalValue = q.reverse ? (4 - value) : value;
 
             scores[q.type] += finalValue;
 
             currentQuestionIndex++;
-            if (currentQuestionIndex < questions.length) {
+            if (currentQuestionIndex < sessionQuestions.length) {
                 loadQuestion();
             } else {
                 showResults();
@@ -139,28 +161,28 @@
             document.getElementById('result-section').classList.remove('hidden');
 
             const totalScore = scores.E + scores.P + scores.M;
-            const percentage = Math.round((totalScore / totalPossibleScore) * 100);
+            const maxPossible = sessionQuestions.length * 4;
+            const percentage = Math.round((totalScore / maxPossible) * 100);
             
             document.getElementById('percentage-text').innerText = `${percentage}%`;
 
-            // Determine Stress Type
             let type = "";
             let desc = "";
             const maxType = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
 
             if (percentage < 25) {
                 type = "Minimal Stress";
-                desc = "You are currently in a balanced state. Continue practicing mindfulness and self-care.";
+                desc = "You are currently in a balanced state. Continue practicing mindfulness.";
             } else if (percentage < 50) {
-                type = "Mild/Manageable Stress";
-                desc = "You're experiencing some tension. This is normal, but consider setting better boundaries or taking more breaks.";
+                type = "Mild Stress";
+                desc = "You're experiencing some tension. Consider setting better boundaries.";
             } else if (percentage < 75) {
-                if (maxType === 'E') { type = "Emotional Burnout"; desc = "Your stress is primarily emotional. You may feel overwhelmed, irritable, or exhausted."; }
-                else if (maxType === 'P') { type = "Physical Stress Manifestation"; desc = "Your stress is showing up in your body. Focus on sleep, exercise, and physical relaxation."; }
-                else { type = "Cognitive Overload"; desc = "Your mind is racing and feeling overwhelmed. You may need to organize tasks or seek mental clarity."; }
+                if (maxType === 'E') { type = "Emotional Burnout"; desc = "Your stress is primarily emotional. You may feel overwhelmed or exhausted."; }
+                else if (maxType === 'P') { type = "Physical Stress"; desc = "Your stress is manifesting physically. Focus on sleep and exercise."; }
+                else { type = "Cognitive Overload"; desc = "Your mind is racing. You may need to organize tasks or seek mental clarity."; }
             } else {
-                type = "Severe Stress / High Risk";
-                desc = "Your stress levels are critically high. We strongly recommend reaching out to a licensed therapist or counselor for support.";
+                type = "Severe Stress";
+                desc = "Your stress levels are critically high. We strongly recommend reaching out to a professional.";
             }
 
             document.getElementById('stress-type').innerText = type;
@@ -181,16 +203,12 @@
                         cutout: '85%'
                     }]
                 },
-                options: {
-                    plugins: { tooltip: { enabled: false } },
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
+                options: { plugins: { tooltip: { enabled: false } }, responsive: true, maintainAspectRatio: false }
             });
         }
 
-        // Initialize
-        loadQuestion();
+        // Initialize the session on load
+        initSession();
     </script>
 </body>
 </html>
