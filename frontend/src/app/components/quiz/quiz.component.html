@@ -1,0 +1,181 @@
+<div class="shell">
+  <div class="card">
+
+    <!-- ── Header ──────────────────────────────────────────────────────────── -->
+    <div class="header">
+      <p class="header__eyebrow">Wellness Screening Tool</p>
+      <h1 class="header__title">MindCheck Pro</h1>
+    </div>
+
+    <!-- ── Progress bar (quiz & submitting only) ────────────────────────────── -->
+    <div class="progress-rail"
+         *ngIf="appState() === 'quiz' || appState() === 'submitting'">
+      <div class="progress-fill"
+           [style.width.%]="progressPct()">
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         STATE: disclaimer
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="body fade-up" *ngIf="appState() === 'disclaimer'">
+      <span class="disclaimer__tag">Medical Disclaimer</span>
+      <h2 class="disclaimer__heading">Before we begin</h2>
+      <p class="disclaimer__body">
+        This application is a <strong>wellness screening tool</strong>, not a clinical
+        diagnostic instrument. Results are based on self-reported data and should never
+        replace professional medical or psychological advice. If you are in crisis,
+        please contact a qualified healthcare provider immediately.
+      </p>
+      <button class="btn-primary" (click)="acceptDisclaimer()">
+        I understand — start the quiz →
+      </button>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         STATE: loading
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="body" *ngIf="appState() === 'loading'">
+      <div class="loader">
+        <div class="loader__spinner"></div>
+        <p class="loader__text">Loading your personalised question set…</p>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         STATE: quiz
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="body fade-up" *ngIf="appState() === 'quiz' && currentQuestion() as q">
+      <div class="q-meta">
+        <span class="q-meta__counter">
+          Question {{ currentIndex() + 1 }} / {{ questions().length }}
+        </span>
+        <span class="q-meta__category">
+          {{ categoryMeta().icon }} {{ categoryMeta().label }}
+        </span>
+      </div>
+
+      <p class="q-text">{{ q.text }}</p>
+
+      <div class="answers">
+        <button
+          *ngFor="let label of answerLabels; let i = index"
+          class="answer-btn"
+          (click)="handleAnswer(i)">
+          <span class="answer-btn__dot"></span>
+          {{ label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         STATE: submitting
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="body" *ngIf="appState() === 'submitting'">
+      <div class="loader">
+        <div class="loader__spinner"></div>
+        <p class="loader__text">Analysing your responses…</p>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         STATE: results
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="body fade-up" *ngIf="appState() === 'results' && result() as r">
+
+      <div class="results-header">
+        <p class="results-header__eyebrow">Your Analysis</p>
+        <h2 class="results-header__title">Here are your results</h2>
+      </div>
+
+      <!-- Donut chart -->
+      <div class="chart-wrapper">
+        <canvas #chartCanvas></canvas>
+        <div class="chart-overlay">
+          <span class="chart-overlay__pct"
+                [ngClass]="getStressColorClass(r.percentage)">
+            {{ r.percentage }}%
+          </span>
+          <span class="chart-overlay__label">Stress level</span>
+        </div>
+      </div>
+
+      <!-- Stress type card -->
+      <div class="result-card">
+        <p class="result-card__eyebrow">Primary Stress Type</p>
+        <h3 class="result-card__type"
+            [ngClass]="getStressColorClass(r.percentage)">
+          {{ r.stressType }}
+        </h3>
+        <p class="result-card__desc">{{ r.stressDescription }}</p>
+      </div>
+
+      <!-- Category score breakdown -->
+      <div class="breakdown">
+        <p class="breakdown__title">Score Breakdown</p>
+
+        <div class="bar-row">
+          <span class="bar-row__label">💛 Emotional</span>
+          <div class="bar-track">
+            <div class="bar-fill"
+                 [style.width.%]="round((r.scores['E'] / (questions().length / 3 * 4)) * 100)"
+                 style="background:#E8614F"></div>
+          </div>
+          <span class="bar-row__val">{{ r.scores['E'] }}</span>
+        </div>
+
+        <div class="bar-row">
+          <span class="bar-row__label">💪 Physical</span>
+          <div class="bar-track">
+            <div class="bar-fill"
+                 [style.width.%]="round((r.scores['P'] / (questions().length / 3 * 4)) * 100)"
+                 style="background:#2D8C6A"></div>
+          </div>
+          <span class="bar-row__val">{{ r.scores['P'] }}</span>
+        </div>
+
+        <div class="bar-row">
+          <span class="bar-row__label">🧠 Mental</span>
+          <div class="bar-track">
+            <div class="bar-fill"
+                 [style.width.%]="round((r.scores['M'] / (questions().length / 3 * 4)) * 100)"
+                 style="background:#2D3A8C"></div>
+          </div>
+          <span class="bar-row__val">{{ r.scores['M'] }}</span>
+        </div>
+      </div>
+
+      <!-- Global stats panel (shown once backend returns data) -->
+      <div class="stats-panel" *ngIf="stats() as s">
+        <p class="stats-panel__title">Community Benchmark</p>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <p class="stat-item__val">{{ s.totalSessions }}</p>
+            <p class="stat-item__key">Total sessions</p>
+          </div>
+          <div class="stat-item">
+            <p class="stat-item__val">{{ round(s.avgPercentage) }}%</p>
+            <p class="stat-item__key">Avg. stress level</p>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-ghost" (click)="restart()">
+        ← Start a new session
+      </button>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         STATE: error
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="body" *ngIf="appState() === 'error'">
+      <div class="error-body">
+        <p class="error-icon">⚠️</p>
+        <h3 class="error-title">Something went wrong</h3>
+        <p class="error-msg">{{ errorMessage() }}</p>
+        <button class="btn-primary" (click)="restart()">Try again</button>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,35 @@
+# ── Dependencies ─────────────────────────────────────────────────────────────
+node_modules/
+.npm
+
+# ── Environment variables (never commit secrets) ──────────────────────────────
+.env
+*.env.local
+*.env.*.local
+
+# ── Angular build output ───────────────────────────────────────────────────────
+frontend/dist/
+frontend/.angular/
+frontend/out-tsc/
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+
+# ── OS files ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE / Editor ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+*.zip
+*.tar.gz

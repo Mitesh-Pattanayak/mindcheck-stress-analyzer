@@ -1,0 +1,42 @@
+/* ── Global Reset & Custom Properties ────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --clr-bg:        #F4F1EB;
+  --clr-surface:   #FFFFFF;
+  --clr-primary:   #2D3A8C;
+  --clr-accent:    #E8614F;
+  --clr-muted:     #8A8A9A;
+  --clr-border:    #E2DDD5;
+  --clr-text:      #1C1C2E;
+  --clr-subtext:   #6B6B7B;
+  --font-display:  'DM Serif Display', Georgia, serif;
+  --font-body:     'DM Sans', system-ui, sans-serif;
+  --radius-card:   24px;
+  --radius-btn:    12px;
+  --shadow-card:   0 4px 40px rgba(0,0,0,0.08);
+  --transition:    all 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+html, body {
+  height: 100%;
+  background-color: var(--clr-bg);
+  color: var(--clr-text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Fade-in Animation ───────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up { animation: fadeUp 0.45s ease forwards; }
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--clr-bg); }
+::-webkit-scrollbar-thumb { background: var(--clr-border); border-radius: 3px; }
